@@ -1,3 +1,6 @@
+// Created by Carron Andrea (@develhox)
+// Code can be found here : https://gist.github.com/develhox/abfe15c40f2d9daebc35
+
 #ifndef __SWITCHS_H__
 #define __SWITCHS_H__
 
