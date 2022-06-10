@@ -3,7 +3,7 @@ project(k8sgenie C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(k8sgenie src/k8sgenie.c
+add_executable(kubegenie src/kubegenie.c
         src/error.c src/error.h
         src/init.c src/init.h
         src/datastruct.c src/datastruct.h
@@ -13,4 +13,5 @@ add_executable(k8sgenie src/k8sgenie.c
         src/ckv.c src/ckv.h
         src/genie.c src/genie.h
         src/switchs.h)
-target_link_libraries(k8sgenie jansson)
+
+target_link_libraries(kubegenie jansson)

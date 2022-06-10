@@ -2,8 +2,8 @@
 // Created by epodegrid on 5/20/22.
 //
 
-#ifndef K8SGENIE_DATASTRUCT_H
-#define K8SGENIE_DATASTRUCT_H
+#ifndef KUBEGENIE_DATASTRUCT_H
+#define KUBEGENIE_DATASTRUCT_H
 
 #include <jansson.h>
 #include <stdbool.h>
@@ -40,4 +40,4 @@ extern struct CKV_LOG CKV_LOG;
 
 char *mkrndstr(size_t length);
 
-#endif //K8SGENIE_DATASTRUCT_H
+#endif //KUBEGENIE_DATASTRUCT_H
