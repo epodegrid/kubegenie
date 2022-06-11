@@ -33,14 +33,37 @@ void genie_run() {
 
         free(temp);
 
-        size_t k8s_index = k8s_resource_match(ckv_k8s_name, ckv_k8s_namespace, ckv_k8s_kind);
+        size_t k8s_index = evil_genie(ckv_k8s_name, ckv_k8s_namespace, ckv_k8s_kind);
         char *ckv_check_id = (char *) json_string_value(json_object_get(ckv_object, "check_id"));
 
-        fix_genie(ckv_check_id, k8s_index, ckv_k8s_kind);
+        good_genie(ckv_check_id, k8s_index, ckv_k8s_kind);
     }
 }
 
-size_t k8s_resource_match(char *resource_name, char *resource_namespace, char *resource_kind) {
+size_t evil_genie(char *resource_name, char *resource_namespace, char *resource_kind) {
+
+    if (K8S_DATA.cacheMatch != -1){
+        const char *k8s_name = json_string_value(json_object_get(json_object_get(json_array_get(K8S_DATA.root, K8S_DATA.cacheMatch), "metadata"), "name"));
+        const char *k8s_namespace = json_string_value(
+                json_object_get(json_object_get(json_array_get(K8S_DATA.root, K8S_DATA.cacheMatch), "metadata"), "namespace"));
+        const char *k8s_kind = json_string_value(json_object_get(json_array_get(K8S_DATA.root, K8S_DATA.cacheMatch), "kind"));
+        if ((strcmp(resource_name, k8s_name) == 0) && (strcmp(resource_kind, k8s_kind) == 0)) {
+            return K8S_DATA.cacheMatch;
+        }
+    }
+
+    if (K8S_DATA.cacheMatch < json_array_size(K8S_DATA.root) - 1){
+
+        K8S_DATA.cacheMatch += 1;
+
+        const char *k8s_name = json_string_value(json_object_get(json_object_get(json_array_get(K8S_DATA.root, K8S_DATA.cacheMatch), "metadata"), "name"));
+        const char *k8s_namespace = json_string_value(
+                json_object_get(json_object_get(json_array_get(K8S_DATA.root, K8S_DATA.cacheMatch), "metadata"), "namespace"));
+        const char *k8s_kind = json_string_value(json_object_get(json_array_get(K8S_DATA.root, K8S_DATA.cacheMatch), "kind"));
+        if ((strcmp(resource_name, k8s_name) == 0) && (strcmp(resource_kind, k8s_kind) == 0)) {
+            return K8S_DATA.cacheMatch;
+        }
+    }
 
     size_t k8s_index;
     json_t *k8s_object;
@@ -52,12 +75,13 @@ size_t k8s_resource_match(char *resource_name, char *resource_namespace, char *r
         const char *k8s_kind = json_string_value(json_object_get(k8s_object, "kind"));
 
         if ((strcmp(resource_name, k8s_name) == 0) && (strcmp(resource_kind, k8s_kind) == 0)) {
+            K8S_DATA.cacheMatch = k8s_index;
             return k8s_index;
         }
     }
 }
 
-void fix_genie(char *ckv_id, size_t k8s_index, char *kind) {
+void good_genie(char *ckv_id, size_t k8s_index, char *kind) {
 
     json_t *k8s_object = json_array_get(K8S_DATA.root, k8s_index);
 
