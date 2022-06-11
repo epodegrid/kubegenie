@@ -215,29 +215,28 @@ void good_genie(char *ckv_id, size_t k8s_index, char *kind, char *path) {
             cases("CKV_K8S_31")
                 json_t *type;
                 if (K8S_DATA.isDocker){
-                    type = json_string("docker/default");
+                    type = json_string("DockerDefault");
                 }
                 else {
-                    type = json_string("runtime/default");
+                    type = json_string("RuntimeDefault");
                 }
 
                 json_t *seccompProfile = json_object();
 
                 json_object_set(seccompProfile, "type", type);
-                json_object_set(k8s_sec_context, "seccompProfile", seccompProfile);
+                json_object_set(ckv_redir[6], "seccompProfile", seccompProfile);
                 break;
             cases("CKV_K8S_37")
-                json_t *capabilities = json_object_get(k8s_sec_context, "capabilities");
+                json_t *capabilities = json_object_get(ckv_redir[6], "capabilities");
                 json_t *drop = json_object_get(capabilities, "drop");
                 json_object_set(drop, "", json_string("NET_RAW"));
             cases("CKV_K8S_40")
-                json_t *K8S_RUN_AS_USER = json_object_get(k8s_sec_context, "runAsUser");
+                json_t *K8S_RUN_AS_USER = json_object_get(ckv_redir[6], "runAsUser");
                 int randomNumber = rand() % 2001 + 10000;
 
                 json_integer_set(K8S_RUN_AS_USER, randomNumber);
                 break;
             defaults
-//                printf("Cannot fix %s in YAML object %zu\n", ckv_id, k8s_index);
                 break;
             } switchs_end;
 }
