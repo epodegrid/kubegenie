@@ -71,6 +71,8 @@ int S_INIT(char *argt, char *argv[], int argc) {
     K8S_DATA.revision = malloc(strlen("latest") + 1);
     strcpy(K8S_DATA.revision, "latest");
 
+    K8S_DATA.cacheMatch = -1;
+
     if ((argc >= 4) && strcmp(argt, "--helm") == 0) {
         if (strcmp(argv[2], "--seccomp") == 0) {
             if (strcmp(argv[3], "docker") == 0) {
