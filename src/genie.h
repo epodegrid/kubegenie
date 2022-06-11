@@ -10,6 +10,6 @@
 
 void genie_run();
 size_t evil_genie(char *resource_name, char *resource_namespace, char *resource_kind);
-void good_genie(char *ckv_id, size_t k8s_index, char *kind);
+void good_genie(char *ckv_id, size_t k8s_index, char *kind, char *path);
 
 #endif //KUBEGENIE_GENIE_H

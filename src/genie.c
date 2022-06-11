@@ -9,12 +9,26 @@
 #include "genie.h"
 
 void genie_run() {
+
     json_t *results = json_object_get(CKV_LOG.root, "results");
 
     size_t ckv_index;
     json_t *ckv_object;
 
     json_array_foreach(json_object_get(results, "failed_checks"), ckv_index, ckv_object) {
+
+        json_t *pathObj = json_object_get((json_object_get(ckv_object, "check_result")), "evaluated_keys");
+        char *path;
+
+        if (json_array_size(pathObj) != 0){
+            path = malloc(strlen(json_string_value(json_array_get(pathObj, 0))) + 1);
+            strcpy(path, json_string_value(json_array_get(pathObj, 0)));
+        }
+        else {
+            path = malloc(strlen("spec/template/spec/containers/[0]/") + 1);
+            strcpy(path, "spec/template/spec/containers/[0]/");
+        }
+
         char *temp = strtok((char *) json_string_value(json_object_get(ckv_object, "resource")), ".");
         char *ckv_resources[3];
 
@@ -36,7 +50,7 @@ void genie_run() {
         size_t k8s_index = evil_genie(ckv_k8s_name, ckv_k8s_namespace, ckv_k8s_kind);
         char *ckv_check_id = (char *) json_string_value(json_object_get(ckv_object, "check_id"));
 
-        good_genie(ckv_check_id, k8s_index, ckv_k8s_kind);
+        good_genie(ckv_check_id, k8s_index, ckv_k8s_kind, path);
     }
 }
 
@@ -81,7 +95,56 @@ size_t evil_genie(char *resource_name, char *resource_namespace, char *resource_
     }
 }
 
-void good_genie(char *ckv_id, size_t k8s_index, char *kind) {
+void good_genie(char *ckv_id, size_t k8s_index, char *kind, char *path) {
+
+    printf("Path %s\n", path);
+
+    json_t *ckv_redir[512];
+    ckv_redir[0] = json_array_get(K8S_DATA.root, k8s_index);
+    int maxPath = 0;
+
+    char *temp = strtok(path, "/");
+    char *CKV_PATH_FINDER[512];
+
+    while (temp != NULL) {
+        CKV_PATH_FINDER[maxPath++] = temp;
+        temp = strtok(NULL, "/");
+    }
+
+    int index = 0;
+
+    while (index < maxPath) {
+        if (!json_is_null(ckv_redir[index]) && ckv_redir[index] != NULL) {
+            switch (json_typeof(ckv_redir[index])) {
+                case 0 :
+                    ckv_redir[index + 1] = json_object_get(ckv_redir[index], CKV_PATH_FINDER[index]);
+                    break;
+                case 1 :
+                    if (CKV_PATH_FINDER[index][0] == '[' &&
+                        CKV_PATH_FINDER[index][strlen(CKV_PATH_FINDER[index]) - 1] == ']') {
+                        char *pos = CKV_PATH_FINDER[index] + 1;
+                        int num = atoi(pos);
+
+                        ckv_redir[index + 1] = json_array_get(ckv_redir[index], num);
+                    }
+                    else {
+                        int num = atoi(CKV_PATH_FINDER[index]);
+                        ckv_redir[index + 1] = json_array_get(ckv_redir[index], num);
+                    }
+                    break;
+                case 5 :
+                case 6 :
+                    break;
+                default:
+                    printf("%d\n",json_typeof(ckv_redir[index]));
+                    fprintf(stderr, "Haven't figured this out yet\n");
+            }
+            index++;
+        } else {
+            printf("Error parsing path. Last known location : %s\n", CKV_PATH_FINDER[index]);
+            break;
+        }
+    }
 
     json_t *k8s_object = json_array_get(K8S_DATA.root, k8s_index);
 
