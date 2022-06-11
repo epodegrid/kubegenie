@@ -96,18 +96,15 @@ size_t evil_genie(char *resource_name, char *resource_namespace, char *resource_
 }
 
 void good_genie(char *ckv_id, size_t k8s_index, char *kind, char *path) {
-
-    printf("Path %s\n", path);
-
     json_t *ckv_redir[512];
     ckv_redir[0] = json_array_get(K8S_DATA.root, k8s_index);
     int maxPath = 0;
 
     char *temp = strtok(path, "/");
-    char *CKV_PATH_FINDER[512];
+    char *path_seperator[512];
 
     while (temp != NULL) {
-        CKV_PATH_FINDER[maxPath++] = temp;
+        path_seperator[maxPath++] = temp;
         temp = strtok(NULL, "/");
     }
 
@@ -117,18 +114,18 @@ void good_genie(char *ckv_id, size_t k8s_index, char *kind, char *path) {
         if (!json_is_null(ckv_redir[index]) && ckv_redir[index] != NULL) {
             switch (json_typeof(ckv_redir[index])) {
                 case 0 :
-                    ckv_redir[index + 1] = json_object_get(ckv_redir[index], CKV_PATH_FINDER[index]);
+                    ckv_redir[index + 1] = json_object_get(ckv_redir[index], path_seperator[index]);
                     break;
                 case 1 :
-                    if (CKV_PATH_FINDER[index][0] == '[' &&
-                        CKV_PATH_FINDER[index][strlen(CKV_PATH_FINDER[index]) - 1] == ']') {
-                        char *pos = CKV_PATH_FINDER[index] + 1;
+                    if (path_seperator[index][0] == '[' &&
+                        path_seperator[index][strlen(path_seperator[index]) - 1] == ']') {
+                        char *pos = path_seperator[index] + 1;
                         int num = atoi(pos);
 
                         ckv_redir[index + 1] = json_array_get(ckv_redir[index], num);
                     }
                     else {
-                        int num = atoi(CKV_PATH_FINDER[index]);
+                        int num = atoi(path_seperator[index]);
                         ckv_redir[index + 1] = json_array_get(ckv_redir[index], num);
                     }
                     break;
@@ -141,76 +138,79 @@ void good_genie(char *ckv_id, size_t k8s_index, char *kind, char *path) {
             }
             index++;
         } else {
-            printf("Error parsing path. Last known location : %s\n", CKV_PATH_FINDER[index]);
+//            printf("Error parsing path. Last known location : %s\n", path_seperator[index]);
             break;
         }
     }
 
-    json_t *k8s_object = json_array_get(K8S_DATA.root, k8s_index);
-
-    json_t *k8s_meta = json_object_get(k8s_object, "metadata");
-    json_t *k8s_namespace = json_object_get(k8s_meta, "namespace");
-
-    json_t *k8s_outer_spec = json_object_get(k8s_object, "spec");
+    json_t *k8s_outer_spec = json_object_get(ckv_redir[0], "spec");
     json_t *k8s_template = json_object_get(k8s_outer_spec, "template");
     json_t *k8s_inner_spec = json_object_get(k8s_template, "spec");
     json_t *k8s_inner_spec_containers = json_object_get(k8s_inner_spec, "containers");
     json_t *k8s_inner_spec_cd = json_array_get(k8s_inner_spec_containers, 0);
     json_t *k8s_sec_context = json_object_get(k8s_inner_spec_cd, "securityContext");
 
+
     switchs(ckv_id)
             {
             cases("CKV_K8S_2")
-                json_object_set(k8s_outer_spec, "privileged", json_false());
+                json_object_set(ckv_redir[1], "privileged", json_false());
+                break;
             cases("CKV_K8S_3")
-                json_object_set(k8s_outer_spec, "hostIPC", json_false());
+                json_object_set(ckv_redir[1], "hostIPC", json_false());
+                break;
             cases("CKV_K8S_4")
-                json_object_set(k8s_outer_spec, "hostNetwork", json_false());
+                json_object_set(ckv_redir[1], "hostNetwork", json_false());
+                break;
             cases("CKV_K8S_6")
                 json_t *runAsUser = json_string("MustRunAsNonRoot");
-                json_object_set(k8s_outer_spec, "rule", runAsUser);
+                json_object_set(ckv_redir[1], "rule", runAsUser);
                 break;
             cases("CKV_K8S_7")
-                json_t  *requiredDropCapabilities = json_object_get(k8s_outer_spec, "requiredDropCapabilities");
+                json_t  *requiredDropCapabilities = json_object_get(ckv_redir[1], "requiredDropCapabilities");
                 json_t *allCapabilities = json_string("NET_RAW");
                 json_object_set(requiredDropCapabilities, "", allCapabilities);
                 break;
-            cases("CKV_K8S_10")
+            cases("CKV_K8S_10") // Needs more depth search
                 json_t *requests = json_object();
                 json_t *cpuRequest = json_integer(1);
-
                 json_object_set(requests, "cpu", cpuRequest);
-                json_object_set(json_object_get(k8s_inner_spec_cd, "resources"), "requests", requests);
-            cases("CKV_K8S_11")
+                json_object_set(json_object_get(ckv_redir[6], "resources"), "requests", requests);
+                break;
+            cases("CKV_K8S_11") // Needs more depth search
                 json_t *limits = json_object();
                 json_t *cpuRequest = json_integer(1);
-
                 json_object_set(limits, "cpu", cpuRequest);
-                json_object_set(json_object_get(k8s_inner_spec_cd, "resources"), "requests", limits);
-            cases("CKV_K8S_12")
+                json_object_set(json_object_get(ckv_redir[6], "resources"), "requests", limits);
+                break;
+            cases("CKV_K8S_12") // Needs more depth search
                 json_t *memoryRequest = json_integer(512);
-                json_object_set(json_object_get(json_object_get(k8s_inner_spec_cd, "resources"), "requests"), "memory", memoryRequest);
-            cases("CKV_K8S_13")
+                json_object_set(json_object_get(json_object_get(ckv_redir[6], "resources"), "requests"), "memory", memoryRequest);
+                break;
+            cases("CKV_K8S_13") // Needs more depth search
                 json_t *memoryRequest = json_integer(512);
-                json_object_set(json_object_get(json_object_get(k8s_inner_spec_cd, "resources"), "limits"), "memory", memoryRequest);
+                json_object_set(json_object_get(json_object_get(ckv_redir[6], "resources"), "limits"), "memory", memoryRequest);
+                break;
             cases("CKV_K8S_20")
-                json_object_set(k8s_sec_context, "allowPrivilegeEscalation", json_false());
+                json_object_set(ckv_redir[6], "allowPrivilegeEscalation", json_false());
                 break;
             cases("CKV_K8S_21")
+                json_t *k8s_meta = json_object_get(ckv_redir[0], "metadata");
+                json_t *k8s_namespace = json_object_get(k8s_meta, "namespace");
                 json_string_set(k8s_namespace, K8S_DATA.pkgID);
                 break;
             cases("CKV_K8S_22")
-                json_object_set(k8s_sec_context, "readOnlyRootFilesystem", json_true());
+                json_object_set(ckv_redir[6], "readOnlyRootFilesystem", json_true());
                 break;
             cases("CKV_K8S_28")
                 json_t *capabilities = json_object();
-                json_object_set(k8s_sec_context, "capabilities", capabilities);
+                json_object_set(ckv_redir[6], "capabilities", capabilities);
 
                 json_t *drop = json_object();
-                json_object_set(k8s_sec_context, "drop", drop);
                 json_t *all = json_string("NET_RAW");
 
                 json_object_set(drop, "", all);
+                json_object_set(capabilities, "drop", drop);
                 break;
             cases("CKV_K8S_31")
                 json_t *type;
@@ -237,7 +237,7 @@ void good_genie(char *ckv_id, size_t k8s_index, char *kind, char *path) {
                 json_integer_set(K8S_RUN_AS_USER, randomNumber);
                 break;
             defaults
-                printf("Cannot fix %s in YAML object %zu\n", ckv_id, k8s_index);
+//                printf("Cannot fix %s in YAML object %zu\n", ckv_id, k8s_index);
                 break;
             } switchs_end;
 }
