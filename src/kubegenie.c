@@ -7,7 +7,7 @@ void usage();
 
 int main(int argc, char *argv[]) {
     char *version = ("\nKubeGenie\n"
-                     "Program version: 3.4.1\n");
+                     "Program version: 3.6\n");
 
     if (argc >= 4 && argc < 10 && strcmp(argv[1],"--helm") == 0) {
         S_HANDLER("--helm", argv + 2, argc - 2);
