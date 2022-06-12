@@ -26,8 +26,11 @@ struct K8S_DATA {
     char *revision;
 
     path_t sysPath; //Used for k8s
+
     bool isFile;
     bool postClean;
+
+    int cacheMatch;
 };
 
 struct CKV_LOG {

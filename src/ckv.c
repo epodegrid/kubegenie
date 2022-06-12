@@ -23,7 +23,7 @@ void ckv_scan_init(){
     fprintf(stdout, "Scanning file with checkov. Please wait\n");
 
     char *cmd = strm7("checkov -f ", fileName,
-                             " -o json --quiet --compact --skip-download > output/",
+                             " -o json --framework kubernetes --quiet --compact --skip-download > output/",
                              K8S_DATA.pkgName, "-", K8S_DATA.pkgID, "/INIT_CKV_REPORT.json");
 
 
