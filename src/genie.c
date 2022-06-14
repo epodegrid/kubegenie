@@ -229,7 +229,7 @@ void good_genie(char *ckv_id, size_t k8s_index, char *kind, char *path) {
             cases("CKV_K8S_37")
                 json_t *capabilities = json_object_get(ckv_redir[6], "capabilities");
                 json_t *drop = json_object_get(capabilities, "drop");
-                json_object_set(drop, "", json_string("NET_RAW"));
+                json_object_set(drop, "", json_string("ALL"));
             cases("CKV_K8S_40")
                 json_t *K8S_RUN_AS_USER = json_object_get(ckv_redir[6], "runAsUser");
                 int randomNumber = rand() % 2001 + 10000;
