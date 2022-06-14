@@ -37,19 +37,21 @@ void usage() {
     printf("Usage: [-h help] [--helm] [--kube] [-v version]\n"
            "\n"
            "    Options:\n"
+
            "        --helm : Run kubegenie on helm chart\n"
-           "     --seccomp : Set seccomp to docker/runtime\n"
-           "    --revision : Use specific chart version\n"
 
            "        --kube : Run kubegenie on kubernetes directory/YAML file\n"
            "            -f : Provide path to file. Use with --kube\n"
            "            -d : Provide path to directory. Use with --kube\n"
 
+           "     --seccomp : Set seccomp to docker/runtime\n"
+           "    --revision : Use specific chart version\n"
+
            "  --no-cleanup : Does not clean up the cache directory.\n"
            "                 Warning! May crash helm charts.\n"
            "                 Warning! cache can grow significantly large\n"
 
-           "       --clean : Clears all cached data and outputs"
+           "       --clean : Clears all cached data and outputs\n"
 
     "           -v --version : Displays the version of program in use\n");
 }
